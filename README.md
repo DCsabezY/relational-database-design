@@ -1,50 +1,39 @@
-# Relációs adatbázis tervezés — Mezőgazdasági terményker eskedő rendszer
+# Relációs adatbázis tervezés — Mezőgazdasági terménykereskedő rendszer
 
-Egyetemi adatbázis-tervezési projekt: egy mezőgazdasági terménykereskedő cég
-működésének modellezése relációs adatbázisként, ER-modell tervezéssel és
-normalizálással (3NF-ig), SQLite implementációval.
+Az Adatbázis 1 tantárgy féléves beadandója. A feladat az volt, hogy találjunk ki egy saját adatbázist, csináljuk meg az ER-sémáját, konvertáljuk relációs modellé, és végül implementáljuk SQLite-ban.
+
+Én egy mezőgazdasági termékekkel foglalkozó cég kisebb modelljét csináltam meg.
 
 ## A modellezett rendszer
 
-A cég gazdáktól vásárol fel terményeket, amiket raktároz, minőségvizsgálatnak
-vet alá, majd vevőknek értékesít. Minden be- és kiszállítást egy mérlegjegy
-rögzít (gazda vagy vevő, raktár, dátum, bruttó/nettó tömeg), a raktárak
-közötti és raktáron belüli mozgásokat pedig külön készletmozgás-nyilvántartás
-követi.
+A rendszerben gazdák termelik a terményt, amit a cég felvásárol, raktároz és vevőknek értékesít. Minden be- és kiszállítást egy mérlegjegy rögzít, a raktárak közötti mozgásokat készletmozgás követi, a beérkező árut pedig minőségvizsgálat ellenőrzi.
 
-**Fő szereplők és táblák:**
+Táblák:
+
 - `Gazda`, `Vevo` — a beszállítók és a vásárlók
-- `Merlegjegy` — minden be-/kiszállítás rögzítése
+- `Merlegjegy` — minden be-/kiszállítás adata
 - `Raktar` — tárolóhelyek
 - `Termeny` — a kereskedett terményfajták
 - `MinosegVizsgalat` — a beérkező terményeken végzett vizsgálatok
-- `KeszletMozgas` — raktári mozgások nyilvántartása
+- `KeszletMozgas` — raktári mozgások
+
+Az adatbázisban van egy-több és több-több kapcsolat is, elsődleges és idegen kulcsok, összetett és többértékű adattagok.
 
 ## ER-modell
 
 ![ER-modell](ER_modell.png)
 
-## Relációs-modell
+## Relációs modell
 
-![Relation_modell](Relation_modell.png)
+![Relációs modell](Relation_modell.png)
 
 ## Normalizálási döntések
 
-**1NF** — A többértékű attribútumok (gazdák email-címei, vevők
-telefonszámai) külön táblába kerültek (`Gazda_EmailCim`, `Vevo_TelefonSzam`,
-`Vevo_EmailCim`), hogy egy gazdának vagy vevőnek több kapcsolati adata is
-lehessen anélkül, hogy egy mezőben több érték keveredne.
+**1NF** — Az email-címek és telefonszámok külön táblába kerültek, mert ha simán a Gazda/Vevő táblában hagyjuk őket, nem lehet megkülönböztetni az egy személyhez tartozó több értéket.
 
-**2NF** — A `Tartalmaz` és a `Termeny_mozgas` kapcsolótáblák összetett
-primary key-t használnak (`Merlegjegy_ID` + `Termeny_ID`, illetve
-`Mozgas_ID` + `Termeny_ID`), mert egy mérlegjegyhez/készletmozgáshoz több
-termény is tartozhat, és egy termény is megjelenhet több mérlegjegyben vagy készletmozgásban
-így ezek több-több kapcsolatok.
+**2NF** — Az adatbázis tartalmaz több-több kapcsolatokat, ezeket kapcsolótáblák oldják fel (`Tartalmaz`, `Termeny_mozgas`) összetett primary key-jel.
 
-**3NF** — A raktár neve nincs duplikálva a `Merlegjegy` táblában; a
-`Raktar_ID` idegen kulcson keresztül, JOIN-nal érjük el a `Raktar` táblából.
-Így elkerüljük a tranzitív függést és azt, hogy egy raktár névváltozása
-esetén több sort is módosítani kelljen.
+**3NF** — A raktár neve nem szerepel közvetlenül a `Merlegjegy` táblában. Idegen kulcson keresztül, JOIN-nal érjük el a `Raktar` táblából — így nem duplikálódnak az adatok.
 
 ## Fájlok
 
@@ -54,7 +43,7 @@ esetén több sort is módosítani kelljen.
 | `data.sql` | Minta adatok feltöltése (`INSERT`) |
 | `queries.sql` | Tábla-módosítások és lekérdezések (~25 db) |
 | `ER_modell.png` | Az ER-diagram |
-| `Relation_modell.png` | A Relációs-diagram |
+| `Relation_modell.png` | A relációs modell diagramja |
 
 ## Használat
 
